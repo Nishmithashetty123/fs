@@ -42,7 +42,7 @@ def fit_model(modelName):
      colormap = np.array(['red', 'lime', 'black'])
      graph_plot([1, 2, 1],'Real Classification',0,y.Targets)
      if modelName == KMeans:
-         m = 'Kmeans’
+         m = 'Kmeans'
      else:
          m = 'Em'
      y1 = model.predict(X)
