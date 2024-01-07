@@ -1,79 +1,48 @@
 	
-import csv
-import math
-import random
-import statistics
+# import necessary libraries
+import pandas as pd
+from sklearn import tree
+from sklearn.preprocessing import LabelEncoder
+from sklearn.naive_bayes import GaussianNB
 
+# Load Data from CSV
+data = pd.read_csv('tennisdata.csv')
+print("The first 5 Values of data is :\n", data.head())
 
-# Defining Function For Calculating Probability
-def calculate_probability(x, mean, stdev):
-    exponent = math.exp(-(math.pow(x - mean, 2) / (2 * math.pow(stdev, 2))))
-    return (1 / (math.sqrt(2 * math.pi) * stdev)) * exponent
+# obtain train data and train output
+X = data.iloc[:, :-1]
+print("\nThe First 5 values of the train data is\n", X.head())
 
-# Predicting Size Of Dataset
-dataset = []
-dataset_size = 0
-with open('diabetes.csv') as csvfile:
-    lines = csv.reader(csvfile)
-    for row in lines:
-        dataset.append([float(attr) for attr in row])
-dataset_size = len(dataset)
-print('Size Of Dataset: ', dataset_size)
+y = data.iloc[:, -1]
+print("\nThe First 5 values of train output is\n", y.head())
 
-# Splitting Training Data And Figuring Training_Indexes
-train_size = int(0.87 * dataset_size)  # 70 % as test data
-print("Size Of Training Set: ", train_size)
-X_train = []
-X_test = dataset.copy()
-training_indexes = random.sample(range(dataset_size), train_size)
+# convert them in numbers
+le_outlook = LabelEncoder()
+X.Outlook = le_outlook.fit_transform(X.Outlook)
 
-# Splitting Data
-for i in training_indexes:
-    X_train.append(dataset[i])
-    X_test.remove(dataset[i])
+le_Temperature = LabelEncoder()
+X.Temperature = le_Temperature.fit_transform(X.Temperature)
 
-# Separate Data Based On Class Value
-classes = {}
-for samples in X_train:
-    last = int(samples[-1])
-    if last not in classes:
-        classes[last] = []
-    classes[last].append(samples)
-# print(classes,"\n")
+le_Humidity = LabelEncoder()
+X.Humidity = le_Humidity.fit_transform(X.Humidity)
 
-# Find Mean And Variance Of Each Attribute By Adding All Attributes
-summaries = {}
-for classValue, training_data in classes.items():
-    summary = [(statistics.mean(attribute), statistics.stdev(attribute)) for attribute in zip(*training_data)]
-    del summary[-1]
-    summaries[classValue] = summary
-# print(summaries)
+le_Windy = LabelEncoder()
+X.Windy = le_Windy.fit_transform(X.Windy)
 
-# Predicting The Output Of Test Data
-X_prediction = []
-for i in X_test:
-    probabilities = {}
-    for classValue, classSummary in summaries.items():
-        probabilities[classValue] = 1
-        for index, attr in enumerate(classSummary):
-            probabilities[classValue] *= calculate_probability(i[index], attr[0], attr[1])
+print("\nNow the Train output is\n", X.head())
 
-    best_label, best_prob = None, -1
-    for classValue, probability in probabilities.items():
-        if best_label is None or probability > best_prob:
-            best_prob = probability
-            best_label = classValue
-    X_prediction.append(best_label)
+le_PlayTennis = LabelEncoder()
+y = le_PlayTennis.fit_transform(y)
+print("\nNow the Train output is\n",y)
 
-print("Size Of Testing Set: ", len(X_prediction))
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.20)
 
-# Find Accuracy
-correct = 0
-for index, key in enumerate(X_test):
-    if X_test[index][-1] == X_prediction[index]:
-        correct += 1
-print("Accuracy: ", correct / (float(len(X_test))) * 100)
+classifier = GaussianNB()
+classifier.fit(X_train, y_train)
 
+from sklearn.metrics import accuracy_score
+print("Accuracy is:", accuracy_score(classifier.predict(X_test), y_test))
 
 Sunny,Hot,High,False,No
 Sunny,Hot,High,True,No
